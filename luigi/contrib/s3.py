@@ -47,7 +47,7 @@ from luigi.six.moves import range
 
 from luigi import configuration
 from luigi.format import get_default_format
-from luigi.parameter import Parameter
+from luigi.parameter import OptionalParameter, Parameter
 from luigi.target import FileAlreadyExists, FileSystem, FileSystemException, FileSystemTarget, AtomicLocalFile, MissingParentDirectory
 from luigi.task import ExternalTask
 
@@ -467,7 +467,7 @@ class S3Client(FileSystem):
             mp.complete_upload()
             return mp.key_name
 
-        except:
+        except BaseException:
             logger.info('Error during multipart s3 copy for %s/%s to %s/%s...', src_bucket, src_key, dst_bucket, dst_key)
             # cancel the copy so we don't get charged for storage consumed by copied parts
             if mp:
@@ -808,7 +808,7 @@ class S3FlagTask(ExternalTask):
     An external task that requires the existence of EMR output in S3.
     """
     path = Parameter()
-    flag = Parameter(default=None)
+    flag = OptionalParameter(default=None)
 
     def output(self):
         return S3FlagTarget(self.path, flag=self.flag)

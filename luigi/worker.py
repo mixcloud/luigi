@@ -125,7 +125,7 @@ class TaskProcess(multiprocessing.Process):
 
     def _run_get_new_deps(self):
         self.task.set_tracking_url = self.status_reporter.update_tracking_url
-        self.task.set_status_message = self.status_reporter.update_status
+        self.task.set_status_message = self.status_reporter.update_status_message
         self.task.set_progress_percentage = self.status_reporter.update_progress_percentage
 
         task_gen = self.task.run()
@@ -268,7 +268,7 @@ class TaskStatusReporter(object):
             tracking_url=tracking_url
         )
 
-    def update_status(self, message):
+    def update_status_message(self, message):
         self._scheduler.set_task_status_message(self._task_id, message)
 
     def update_progress_percentage(self, percentage):
@@ -404,7 +404,7 @@ class KeepAliveThread(threading.Thread):
                 response = None
                 try:
                     response = self._scheduler.ping(worker=self._worker_id)
-                except:  # httplib.BadStatusLine:
+                except BaseException:  # httplib.BadStatusLine:
                     logger.warning('Failed pinging scheduler')
 
                 # handle rpc messages
@@ -488,8 +488,7 @@ class Worker(object):
         runnable = kwargs['runnable']
         task = self._scheduled_tasks.get(task_id)
         if task:
-            msg = (task, status, runnable)
-            self._add_task_history.append(msg)
+            self._add_task_history.append((task, status, runnable))
             kwargs['owners'] = task._owner_list()
 
         if task_id in self._batch_running_tasks:
@@ -657,7 +656,7 @@ class Worker(object):
         # we track queue size ourselves because len(queue) won't work for multiprocessing
         queue_size = 1
         try:
-            seen = set([task.task_id])
+            seen = {task.task_id}
             while queue_size:
                 current = queue.get()
                 queue_size -= 1
@@ -786,7 +785,7 @@ class Worker(object):
         if isinstance(dependency, Target):
             raise Exception('requires() can not return Target objects. Wrap it in an ExternalTask class')
         elif not isinstance(dependency, Task):
-            raise Exception('requires() must return Task objects')
+            raise Exception('requires() must return Task objects but {} is a {}'.format(dependency, type(dependency)))
 
     def _check_complete_value(self, is_complete):
         if is_complete not in (True, False):
