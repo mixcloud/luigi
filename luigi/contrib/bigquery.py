@@ -348,7 +348,7 @@ class BigQueryClient(object):
                 return
 
             logger.info('Waiting for job %s:%s to complete...', project_id, job_id)
-            time.sleep(5)
+            time.sleep(0.5)
 
     def copy(self,
              source_table,
