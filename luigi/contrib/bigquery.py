@@ -521,6 +521,13 @@ class BigQueryLoadTask(MixinBigQueryBulkComplete, luigi.Task):
     def allow_quoted_new_lines(self):
         """	Indicates if BigQuery should allow quoted data sections that contain newline characters in a CSV file. The default value is false."""
         return False
+    
+    @property
+    def time_partitioning_field(self):
+        """Time-based partitioning field for the destination table, which must be a TIMESTAMP or DATE field. Leave as None for no partitioning.
+        
+        If set, DAY type partitioning will be used"""
+        return None
 
     def run(self):
         output = self.output()
@@ -557,6 +564,12 @@ class BigQueryLoadTask(MixinBigQueryBulkComplete, luigi.Task):
 
         if self.schema:
             job['configuration']['load']['schema'] = {'fields': self.schema}
+        
+        if self.time_partitioning_field:
+            job['configuration']['load']['timePartitioning'] = {
+                'type': 'DAY',  # this is the only supported value
+                'field': self.time_partitioning_field
+            }
 
         bq_client.run_job(output.table.project_id, job, dataset=output.table.dataset)
 
