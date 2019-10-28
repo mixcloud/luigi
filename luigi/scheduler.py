@@ -95,7 +95,7 @@ def rpc_method(**request_args):
     def _rpc_method(fn):
         # If request args are passed, return this function again for use as
         # the decorator function with the request args attached.
-        fn_args = six.getargspec(fn)
+        fn_args = inspect.getfullargspec(fn)
 
         assert not fn_args.varargs
         assert fn_args.args[0] == 'self'
