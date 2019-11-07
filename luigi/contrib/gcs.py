@@ -55,7 +55,7 @@ NUM_RETRIES = 5
 CHUNKSIZE = 10 * 1024 * 1024
 
 # Mimetype to use if one can't be guessed from the file extension.
-DEFAULT_MIMETYPE = 'application/octet-stream'
+DEFAULT_MIMETYPE = 'text/plain'
 
 # Time to sleep while waiting for eventual consistency to finish.
 EVENTUAL_CONSISTENCY_SLEEP_INTERVAL = 0.1
